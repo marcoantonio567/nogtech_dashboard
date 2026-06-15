@@ -69,3 +69,21 @@ utilizando a média de suas pontuações.
 CPF, CEP e identificadores de transações não são enviados ao navegador. As
 compras pertencentes ao mesmo aluno são associadas somente por meio de um hash
 gerado no servidor.
+
+## Arquitetura
+
+O backend segue uma organização inspirada em DDD:
+
+- `domain`: entidades e regras de negócio, incluindo o cálculo de engajamento
+- `application`: casos de uso, DTOs e portas de acesso a dados
+- `infrastructure`: implementação do repositório baseado no CSV
+- `presentation`: adaptador HTTP e renderização do dashboard
+- `bootstrap.py`: composição das dependências da aplicação
+
+O arquivo `dashboard.py` permanece como ponto de entrada para execução local.
+
+### Testes
+
+```powershell
+python -m unittest discover -v
+```

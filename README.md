@@ -51,6 +51,24 @@ Open [http://127.0.0.1:8000](http://127.0.0.1:8000) in your browser.
 The health endpoint is available at
 [http://127.0.0.1:8000/health](http://127.0.0.1:8000/health).
 
+## Architecture
+
+The backend follows a DDD-inspired organization:
+
+- `domain`: entities and business rules, including engagement scoring
+- `application`: use cases, DTOs, and data access ports
+- `infrastructure`: CSV repository implementation
+- `presentation`: HTTP adapter and dashboard rendering
+- `bootstrap.py`: application dependency composition
+
+The root `dashboard.py` remains the local execution entry point.
+
+### Tests
+
+```powershell
+python -m unittest discover -v
+```
+
 ## Engagement Score
 
 The engagement score ranges from 0 to 100 and combines:

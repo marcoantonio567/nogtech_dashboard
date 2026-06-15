@@ -271,24 +271,6 @@
       })[char]);
     }
 
-    function engagementScore(row) {
-      let score = 0;
-      let weight = 0;
-      if (row.hours !== null) {
-        score += Math.min(row.hours / 160, 1) * 50;
-        weight += 50;
-      }
-      if (row.nps !== null) {
-        score += (row.nps / 10) * 30;
-        weight += 30;
-      }
-      if (row.support !== null) {
-        score += Math.max(0, 1 - row.support / 6) * 20;
-        weight += 20;
-      }
-      return weight ? score / weight * 100 : null;
-    }
-
     function filteredRows() {
       const start = elements.startDate.value;
       const end = elements.endDate.value;
@@ -306,7 +288,7 @@
       const revenue = data.reduce((sum, row) => sum + row.value, 0);
       const studentScores = new Map();
       data.forEach(row => {
-        const score = engagementScore(row);
+        const score = row.engagementScore;
         if (score === null) return;
         if (!studentScores.has(row.student)) studentScores.set(row.student, []);
         studentScores.get(row.student).push(score);
