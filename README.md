@@ -1,22 +1,65 @@
-# Dashboard de vendas e engajamento
+# Sales and Engagement Dashboard
 
-Painel local construído exclusivamente a partir de `relatorio_final.csv`, a base tratada,
-enriquecida e anonimizada. Nenhum arquivo bruto é lido pela aplicação.
+A lightweight local dashboard that combines sales performance and student
+engagement metrics in a single view.
 
-## Executar
+The application reads exclusively from `relatorio_final.csv`, a cleaned,
+enriched, and anonymized dataset. Raw source files are never accessed by the
+dashboard.
+
+## Screenshots
+
+### Desktop overview
+
+![Sales and engagement dashboard desktop view](assets/screenshots/dashboard-overview.png)
+
+### Mobile view
+
+<p align="center">
+  <img src="assets/screenshots/dashboard-mobile.png" alt="Sales and engagement dashboard mobile view" width="430">
+</p>
+
+## Features
+
+- Total sales, total revenue, and average order value KPIs
+- Monthly revenue trend
+- Sales distribution by Brazilian state
+- Student engagement rate and metric coverage
+- Filters by date range, course, state, and holiday sales
+- Responsive layout for desktop and mobile screens
+- Browser payload limited to the fields required by the dashboard
+
+## Running Locally
+
+### Requirements
+
+- Python 3
+
+### Start the dashboard
 
 ```powershell
 python dashboard.py
 ```
 
-Abra `http://127.0.0.1:8000` no navegador.
-caso não funcione use : http://127.0.0.1:8000/
+Open [http://127.0.0.1:8000](http://127.0.0.1:8000) in your browser.
 
-O painel inclui:
+The health endpoint is available at
+[http://127.0.0.1:8000/health](http://127.0.0.1:8000/health).
 
-- total de vendas, valor total vendido e ticket médio;
-- vendas por período e por UF;
-- indicador de engajamento por aluno único e cobertura das métricas;
-- filtros por período, curso, UF e feriado;
-- envio ao navegador apenas das colunas necessárias, sem CPF, CEP ou identificador da transação.
-  A associação de compras do mesmo aluno usa somente um hash derivado no servidor.
+## Engagement Score
+
+The engagement score ranges from 0 to 100 and combines:
+
+- watched hours: 50%
+- NPS score: 30%
+- low number of support tickets: 20%
+
+When a metric is unavailable, the remaining weights are normalized. A student
+is considered engaged when their score is 60 or higher. Students with multiple
+purchases are counted once using the average of their scores.
+
+## Privacy
+
+CPF, ZIP code, and transaction identifiers are not sent to the browser.
+Purchases belonging to the same student are associated only through a
+server-generated hash.
