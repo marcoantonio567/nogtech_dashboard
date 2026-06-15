@@ -1,3 +1,8 @@
+<p align="center">
+  <a href="README.md"><img src="https://img.shields.io/badge/English-275DAD?style=for-the-badge" alt="Read in English"></a>
+  <a href="README.pt-BR.md"><img src="https://img.shields.io/badge/Português-667085?style=for-the-badge" alt="Ler em português"></a>
+</p>
+
 # Sales and Engagement Dashboard
 
 A lightweight local dashboard that combines sales performance and student
@@ -13,10 +18,10 @@ dashboard.
 
 ![Sales and engagement dashboard desktop view](assets/screenshots/dashboard-overview.png)
 
-### Mobile view
+### Responsive mobile view
 
 <p align="center">
-  <img src="assets/screenshots/dashboard-mobile.png" alt="Sales and engagement dashboard mobile view" width="430">
+  <img src="assets/screenshots/dashboard-mobile.png" alt="Sales and engagement dashboard mobile view" width="360">
 </p>
 
 ## Features

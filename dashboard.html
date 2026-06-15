@@ -60,8 +60,10 @@
       padding: 18px;
       margin-bottom: 18px;
     }
+    .filters > * { min-width: 0; }
     label { display: grid; gap: 7px; color: var(--muted); font-size: 0.78rem; font-weight: 700; }
     select, input {
+      min-width: 0;
       width: 100%;
       min-height: 42px;
       border: 1px solid #d7deea;
@@ -152,6 +154,7 @@
       header { display: block; }
       .source { display: inline-block; margin-top: 14px; }
       .filters, .kpis { grid-template-columns: 1fr; }
+      .filters { padding: 18px; }
       .chart { padding: 16px; min-height: 345px; }
       .plot { height: 255px; }
     }
