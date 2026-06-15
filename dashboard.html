@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Painel de Vendas e Engajamento</title>
+  <style>
+    :root {
+      --bg: #f3f6fb;
+      --surface: #ffffff;
+      --ink: #172033;
+      --muted: #667085;
+      --line: #e4e9f2;
+      --primary: #275dad;
+      --primary-soft: #eaf1fb;
+      --accent: #f28c28;
+      --success: #1f8f63;
+      --shadow: 0 10px 30px rgba(28, 45, 78, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    button, input, select { font: inherit; }
+    .shell { max-width: 1440px; margin: 0 auto; padding: 28px; }
+    header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 22px;
+    }
+    h1 { margin: 0; font-size: clamp(1.7rem, 3vw, 2.5rem); letter-spacing: -0.04em; }
+    header p { margin: 8px 0 0; color: var(--muted); }
+    .source {
+      flex: 0 0 auto;
+      padding: 9px 13px;
+      border: 1px solid #cfe0f7;
+      border-radius: 999px;
+      color: var(--primary);
+      background: var(--primary-soft);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    .filters {
+      display: grid;
+      grid-template-columns: 1.5fr 1.5fr 1fr 1fr 1fr auto;
+      gap: 14px;
+      align-items: end;
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+    label { display: grid; gap: 7px; color: var(--muted); font-size: 0.78rem; font-weight: 700; }
+    select, input {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid #d7deea;
+      border-radius: 10px;
+      padding: 9px 11px;
+      color: var(--ink);
+      background: #fff;
+      outline: none;
+    }
+    select:focus, input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(39, 93, 173, 0.12); }
+    .clear {
+      min-height: 42px;
+      border: 0;
+      border-radius: 10px;
+      padding: 0 16px;
+      color: #fff;
+      background: var(--primary);
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .clear:hover { background: #1f4f96; }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+    .kpi { padding: 20px; position: relative; overflow: hidden; }
+    .kpi::after {
+      content: "";
+      position: absolute;
+      width: 76px;
+      height: 76px;
+      right: -22px;
+      top: -24px;
+      border-radius: 50%;
+      background: var(--primary-soft);
+    }
+    .kpi .label { color: var(--muted); font-size: 0.82rem; font-weight: 700; }
+    .kpi strong { display: block; margin-top: 7px; font-size: clamp(1.45rem, 3vw, 2rem); letter-spacing: -0.04em; }
+    .kpi small { display: block; margin-top: 7px; color: var(--muted); }
+    .grid {
+      display: grid;
+      grid-template-columns: 1.65fr 1fr;
+      gap: 18px;
+    }
+    .chart { padding: 20px; min-height: 380px; }
+    .chart-head { display: flex; justify-content: space-between; gap: 16px; align-items: baseline; margin-bottom: 18px; }
+    h2 { margin: 0; font-size: 1.02rem; }
+    .chart-head span { color: var(--muted); font-size: 0.78rem; }
+    .plot { height: 285px; position: relative; }
+    svg { width: 100%; height: 100%; overflow: visible; }
+    .axis { stroke: #dfe5ee; stroke-width: 1; }
+    .line { fill: none; stroke: var(--primary); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+    .area { fill: url(#areaGradient); }
+    .point { fill: #fff; stroke: var(--primary); stroke-width: 2; }
+    .bar { fill: var(--primary); rx: 5; }
+    .bar:hover { fill: var(--accent); }
+    .tick { fill: var(--muted); font-size: 11px; }
+    .tooltip {
+      position: fixed;
+      display: none;
+      z-index: 20;
+      pointer-events: none;
+      padding: 8px 10px;
+      border-radius: 8px;
+      color: #fff;
+      background: #172033;
+      box-shadow: var(--shadow);
+      font-size: 0.76rem;
+    }
+    .empty { height: 100%; display: grid; place-items: center; color: var(--muted); text-align: center; }
+    .note {
+      margin-top: 18px;
+      padding: 14px 18px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.55;
+    }
+    .note strong { color: var(--ink); }
+    @media (max-width: 1050px) {
+      .filters { grid-template-columns: repeat(3, 1fr); }
+      .kpis { grid-template-columns: repeat(2, 1fr); }
+      .grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 650px) {
+      .shell { padding: 16px; }
+      header { display: block; }
+      .source { display: inline-block; margin-top: 14px; }
+      .filters, .kpis { grid-template-columns: 1fr; }
+      .chart { padding: 16px; min-height: 345px; }
+      .plot { height: 255px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div>
+        <h1>Vendas e engajamento</h1>
+        <p>Visão comercial e acadêmica consolidada em um só painel.</p>
+      </div>
+      <div class="source">Base tratada e anonimizada</div>
+    </header>
+
+    <section class="filters panel" aria-label="Filtros do painel">
+      <label>Data inicial<input id="startDate" type="date"></label>
+      <label>Data final<input id="endDate" type="date"></label>
+      <label>Curso<select id="course"></select></label>
+      <label>UF<select id="uf"></select></label>
+      <label>Feriado<select id="holiday">
+        <option value="">Todos</option>
+        <option value="true">Sim</option>
+        <option value="false">Não</option>
+      </select></label>
+      <button class="clear" id="clearFilters" type="button">Limpar filtros</button>
+    </section>
+
+    <section class="kpis" aria-label="Indicadores principais">
+      <article class="kpi panel">
+        <span class="label">Total de vendas</span>
+        <strong id="totalSales">0</strong>
+        <small id="salesContext">transações</small>
+      </article>
+      <article class="kpi panel">
+        <span class="label">Valor total vendido</span>
+        <strong id="totalRevenue">R$ 0</strong>
+        <small>receita no período filtrado</small>
+      </article>
+      <article class="kpi panel">
+        <span class="label">Ticket médio</span>
+        <strong id="avgTicket">R$ 0</strong>
+        <small>valor médio por venda</small>
+      </article>
+      <article class="kpi panel">
+        <span class="label">Alunos engajados</span>
+        <strong id="engagement">0%</strong>
+        <small id="engagementCoverage">sem dados de engajamento</small>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="chart panel">
+        <div class="chart-head">
+          <h2>Vendas por período</h2>
+          <span>Receita mensal</span>
+        </div>
+        <div class="plot" id="timeChart"></div>
+      </article>
+      <article class="chart panel">
+        <div class="chart-head">
+          <h2>Vendas por UF</h2>
+          <span>Quantidade de transações</span>
+        </div>
+        <div class="plot" id="geoChart"></div>
+      </article>
+    </section>
+
+    <section class="note panel">
+      <strong>Como o engajamento é calculado:</strong>
+      escore de 0 a 100 combinando horas assistidas (50%), NPS (30%) e baixa quantidade de tickets de suporte (20%).
+      Quando alguma métrica está ausente, os pesos disponíveis são normalizados. Considera-se engajado quem alcança escore igual ou superior a 60.
+      Alunos com mais de uma venda são contabilizados uma única vez pela média de seus escores.
+      A base não possui valores preenchidos para percentual de conclusão.
+    </section>
+  </main>
+
+  <div class="tooltip" id="tooltip"></div>
+  <script>
+    const rows = __DASHBOARD_DATA__;
+    const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+    const integer = new Intl.NumberFormat("pt-BR");
+    const monthLabel = new Intl.DateTimeFormat("pt-BR", { month: "short", year: "2-digit", timeZone: "UTC" });
+
+    const elements = {
+      startDate: document.querySelector("#startDate"),
+      endDate: document.querySelector("#endDate"),
+      course: document.querySelector("#course"),
+      uf: document.querySelector("#uf"),
+      holiday: document.querySelector("#holiday"),
+      totalSales: document.querySelector("#totalSales"),
+      totalRevenue: document.querySelector("#totalRevenue"),
+      avgTicket: document.querySelector("#avgTicket"),
+      engagement: document.querySelector("#engagement"),
+      engagementCoverage: document.querySelector("#engagementCoverage"),
+      salesContext: document.querySelector("#salesContext"),
+      timeChart: document.querySelector("#timeChart"),
+      geoChart: document.querySelector("#geoChart"),
+      tooltip: document.querySelector("#tooltip")
+    };
+
+    function unique(field) {
+      return [...new Set(rows.map(row => row[field]))].sort((a, b) => a.localeCompare(b, "pt-BR"));
+    }
+
+    function fillSelect(select, values) {
+      select.innerHTML = '<option value="">Todos</option>' +
+        values.map(value => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("");
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, char => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      })[char]);
+    }
+
+    function engagementScore(row) {
+      let score = 0;
+      let weight = 0;
+      if (row.hours !== null) {
+        score += Math.min(row.hours / 160, 1) * 50;
+        weight += 50;
+      }
+      if (row.nps !== null) {
+        score += (row.nps / 10) * 30;
+        weight += 30;
+      }
+      if (row.support !== null) {
+        score += Math.max(0, 1 - row.support / 6) * 20;
+        weight += 20;
+      }
+      return weight ? score / weight * 100 : null;
+    }
+
+    function filteredRows() {
+      const start = elements.startDate.value;
+      const end = elements.endDate.value;
+      return rows.filter(row =>
+        (!start || row.date >= start) &&
+        (!end || row.date <= end) &&
+        (!elements.course.value || row.course === elements.course.value) &&
+        (!elements.uf.value || row.uf === elements.uf.value) &&
+        (!elements.holiday.value || String(row.holiday) === elements.holiday.value)
+      );
+    }
+
+    function update() {
+      const data = filteredRows();
+      const revenue = data.reduce((sum, row) => sum + row.value, 0);
+      const studentScores = new Map();
+      data.forEach(row => {
+        const score = engagementScore(row);
+        if (score === null) return;
+        if (!studentScores.has(row.student)) studentScores.set(row.student, []);
+        studentScores.get(row.student).push(score);
+      });
+      const scores = [...studentScores.values()].map(values =>
+        values.reduce((sum, value) => sum + value, 0) / values.length
+      );
+      const engaged = scores.filter(score => score >= 60).length;
+
+      elements.totalSales.textContent = integer.format(data.length);
+      elements.totalRevenue.textContent = money.format(revenue);
+      elements.avgTicket.textContent = money.format(data.length ? revenue / data.length : 0);
+      elements.engagement.textContent = scores.length ? `${Math.round(engaged / scores.length * 100)}%` : "N/D";
+      elements.engagementCoverage.textContent = scores.length
+        ? `${integer.format(scores.length)} alunos únicos com métricas`
+        : "sem dados de engajamento";
+      elements.salesContext.textContent = `${integer.format(data.length)} de ${integer.format(rows.length)} transações`;
+
+      drawTimeChart(data);
+      drawGeoChart(data);
+    }
+
+    function aggregate(data, key, value) {
+      return [...data.reduce((map, row) => {
+        map.set(row[key], (map.get(row[key]) || 0) + value(row));
+        return map;
+      }, new Map()).entries()].sort(([a], [b]) => a.localeCompare(b));
+    }
+
+    function drawTimeChart(data) {
+      const series = aggregate(data, "month", row => row.value);
+      if (!series.length) return showEmpty(elements.timeChart);
+
+      const width = 760, height = 285;
+      const pad = { left: 58, right: 16, top: 12, bottom: 42 };
+      const innerW = width - pad.left - pad.right;
+      const innerH = height - pad.top - pad.bottom;
+      const max = Math.max(...series.map(([, value]) => value), 1);
+      const x = index => pad.left + (series.length === 1 ? innerW / 2 : index * innerW / (series.length - 1));
+      const y = value => pad.top + innerH - value / max * innerH;
+      const points = series.map(([, value], index) => `${x(index)},${y(value)}`).join(" ");
+      const area = `${pad.left},${pad.top + innerH} ${points} ${x(series.length - 1)},${pad.top + innerH}`;
+      const guides = [0, .25, .5, .75, 1].map(part => {
+        const gy = pad.top + innerH * (1 - part);
+        return `<line class="axis" x1="${pad.left}" y1="${gy}" x2="${width-pad.right}" y2="${gy}"/>
+          <text class="tick" x="${pad.left-8}" y="${gy+4}" text-anchor="end">${compactMoney(max*part)}</text>`;
+      }).join("");
+      const labels = series.map(([month], index) => {
+        const date = new Date(`${month}-01T00:00:00Z`);
+        return `<text class="tick" x="${x(index)}" y="${height-12}" text-anchor="middle">${monthLabel.format(date).replace(".", "")}</text>`;
+      }).join("");
+      const dots = series.map(([month, value], index) =>
+        `<circle class="point hoverable" cx="${x(index)}" cy="${y(value)}" r="5"
+          data-tip="${escapeHtml(month)}: ${escapeHtml(money.format(value))}"></circle>`
+      ).join("");
+
+      elements.timeChart.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Receita mensal">
+        <defs><linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#275dad" stop-opacity=".26"/>
+          <stop offset="100%" stop-color="#275dad" stop-opacity=".02"/>
+        </linearGradient></defs>
+        ${guides}<polygon class="area" points="${area}"/><polyline class="line" points="${points}"/>${dots}${labels}
+      </svg>`;
+      bindTooltips(elements.timeChart);
+    }
+
+    function drawGeoChart(data) {
+      const series = aggregate(data, "uf", () => 1).sort((a, b) => b[1] - a[1]).slice(0, 10);
+      if (!series.length) return showEmpty(elements.geoChart);
+
+      const width = 480, height = 285;
+      const pad = { left: 40, right: 18, top: 8, bottom: 35 };
+      const innerW = width - pad.left - pad.right;
+      const innerH = height - pad.top - pad.bottom;
+      const max = Math.max(...series.map(([, value]) => value), 1);
+      const slot = innerW / series.length;
+      const barW = Math.min(30, slot * .62);
+      const bars = series.map(([uf, value], index) => {
+        const h = value / max * innerH;
+        const bx = pad.left + index * slot + (slot - barW) / 2;
+        const by = pad.top + innerH - h;
+        return `<rect class="bar hoverable" x="${bx}" y="${by}" width="${barW}" height="${h}"
+          data-tip="${escapeHtml(uf)}: ${integer.format(value)} vendas"></rect>
+          <text class="tick" x="${bx + barW/2}" y="${height-11}" text-anchor="middle">${escapeHtml(uf)}</text>`;
+      }).join("");
+      elements.geoChart.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Vendas por UF">
+        <line class="axis" x1="${pad.left}" y1="${pad.top+innerH}" x2="${width-pad.right}" y2="${pad.top+innerH}"/>
+        ${bars}
+      </svg>`;
+      bindTooltips(elements.geoChart);
+    }
+
+    function compactMoney(value) {
+      if (value >= 1000000) return `R$ ${(value/1000000).toFixed(1)} mi`;
+      if (value >= 1000) return `R$ ${(value/1000).toFixed(0)} mil`;
+      return `R$ ${Math.round(value)}`;
+    }
+
+    function showEmpty(container) {
+      container.innerHTML = '<div class="empty">Nenhum dado encontrado para os filtros selecionados.</div>';
+    }
+
+    function bindTooltips(container) {
+      container.querySelectorAll(".hoverable").forEach(node => {
+        node.addEventListener("mousemove", event => {
+          elements.tooltip.textContent = node.dataset.tip;
+          elements.tooltip.style.display = "block";
+          elements.tooltip.style.left = `${event.clientX + 12}px`;
+          elements.tooltip.style.top = `${event.clientY + 12}px`;
+        });
+        node.addEventListener("mouseleave", () => elements.tooltip.style.display = "none");
+      });
+    }
+
+    fillSelect(elements.course, unique("course"));
+    fillSelect(elements.uf, unique("uf"));
+    elements.startDate.min = elements.endDate.min = rows.reduce((min, row) => row.date < min ? row.date : min, rows[0].date);
+    elements.startDate.max = elements.endDate.max = rows.reduce((max, row) => row.date > max ? row.date : max, rows[0].date);
+
+    document.querySelectorAll(".filters input, .filters select").forEach(control => control.addEventListener("change", update));
+    document.querySelector("#clearFilters").addEventListener("click", () => {
+      elements.startDate.value = "";
+      elements.endDate.value = "";
+      elements.course.value = "";
+      elements.uf.value = "";
+      elements.holiday.value = "";
+      update();
+    });
+    update();
+  </script>
+</body>
+</html>
